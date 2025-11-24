@@ -3,6 +3,10 @@ on: workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest # docker image sau github agent?
+    defaults:
+      run:
+        working-directory: web_app
+
     steps:
       - name: Get code # download the code from the repo
         uses: actions/checkout@v3

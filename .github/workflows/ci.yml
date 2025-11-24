@@ -55,7 +55,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-aws-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-          IMAGE_TAG: "timo-web-app-image"
+          # IMAGE_TAG: ${{ github.sha }} # "timo-web-app-image"
         run: |
+          echo "${github.sha:0:8}" >> $IMAGE_TAG
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

@@ -28,7 +28,7 @@ jobs:
         run: npm test
 
       - name: Build Project
-        run: npm build
+        run: npm run build
         # cache???
 
       - name: Setup AWS ECR Details

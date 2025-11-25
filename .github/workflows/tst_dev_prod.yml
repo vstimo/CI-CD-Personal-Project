@@ -1,0 +1,32 @@
+name: Download Image & Create Target Envs
+on: workflow_dispatch
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest # docker image sau github agent?
+
+    # This tells Github action so that for each run: command to execute it inside the web_app folder INSTEAD of the repo root
+    # defaults:
+    #   run:
+    #     working-directory: web_app
+
+    steps:
+      - name: Configure AWS credentials # download the code from the repo
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-aws-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Pull image from ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-aws-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+          IMAGE_TAG: "latest"
+        run: |
+          docker pull "$IMAGE_TAG"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

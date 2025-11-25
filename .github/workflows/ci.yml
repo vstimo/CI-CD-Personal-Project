@@ -69,7 +69,7 @@ jobs:
 
       - name: Build and push Docker Image
         env:
-          ECR_REGISTRY: ${{ steps.login-aws-ecr.outputs.registry }}   # will be 'public.ecr.aws'
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}   # will be 'public.ecr.aws'
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}            # e.g. 'x1y2z3w4'
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}                     # e.g. 'web-app'
           GITHUB_SHA: ${{ github.sha }}

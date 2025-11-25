@@ -85,6 +85,7 @@ jobs:
               echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
               echo "ECR_REPOSITORY: $ECR_REPOSITORY"
               echo "GITHUB_SHA: $GITHUB_SHA"
+<<<<<<< HEAD
 
               IMAGE_TAG=${GITHUB_SHA::8}
               echo "IMAGE_TAG: $IMAGE_TAG"
@@ -94,3 +95,14 @@ jobs:
 
               docker build -t "$IMAGE_NAME" .
               docker push "$IMAGE_NAME"
+=======
+              
+              IMAGE_TAG=${GITHUB_SHA::8}
+              echo "IMAGE_TAG: $IMAGE_TAG"
+              
+              IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
+              echo "IMAGE_NAME: $IMAGE_NAME"
+              
+              docker build -t "$IMAGE_NAME" .
+              docker push "$IMAGE_NAME"
+>>>>>>> b77af50df9a6af9357341837f39c3323ee5f0649

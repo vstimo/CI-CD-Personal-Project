@@ -5,7 +5,7 @@ resource "aws_security_group" "alb_sg" {
 
     ingress {
         description = "Allow HTTP from anywhere"
-        from_port   = 3000
+        from_port   = 80
         to_port     = 3000 # 80
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]

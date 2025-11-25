@@ -5,14 +5,6 @@ resource "aws_ecs_cluster" "cluster"{
     }
 }
 
-# resource "aws_cloudwatch_log_group" "cloudwatch" {
-#   name              = "/ecs/${var.project}-${var.environment}"
-#   retention_in_days = 7                    # keep costs low
-#   tags = {
-#         Name = "/ecs/${var.project}-${var.environment}"
-#     }
-# }
-
 # -----------------------------
 # Task Definition: WHAT to run (image, port, resources, logging)
 # -----------------------------

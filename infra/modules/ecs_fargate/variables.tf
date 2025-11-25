@@ -21,10 +21,6 @@ variable "subnet_id" {
   type        = string
 }
 
-# variable "fargate_sg" {
-#   type        = string
-# }
-
 variable "alb_sg" {
     type = string
 }
@@ -41,7 +37,7 @@ variable "image" {
 
 variable "port" {
   type        = number
-  default     = 3000
+  default     = 80
 }
 
 variable "cpu" {

@@ -8,7 +8,7 @@ function App() {
         <div id="logo-img">
           <img src={logo} />
         </div>
-        <h1>Timo modification</h1>
+        <h1>Timo modification v2</h1>
       </header>
       <MainContent />
     </>

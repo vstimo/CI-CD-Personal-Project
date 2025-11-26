@@ -4,7 +4,7 @@ on:
     branches:
       - 'feature/**' # when modifies are made to any feature branch
     paths-ignore:
-      - 'infra/**'
+      - 'infra/**' # if modifications are made to infra folder dont trigger the pipeline
   workflow_dispatch:
 
 jobs:
@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci # install dependencies from package-lock.json
 
+      - name: Build Project
+        run: npm run build
+
       # TEST STEPS!!
       - name: Run lint tests
         run: |
@@ -52,4 +55,3 @@ jobs:
         run: |
           echo "Running unit tests."
           npm test
-

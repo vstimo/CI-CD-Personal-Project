@@ -1,14 +1,5 @@
 name: Build App and Push Image to ECR
-on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - main # THE TRUNK
-    types:
-      - opened
-      - synchronize # runs again when commits are pushed to the PR
-      - reopened
-
+on: workflow_dispatch
 
 # dev branches will add the tag with dev,
 # so I should use tags like:  :dev, :tst, :prd

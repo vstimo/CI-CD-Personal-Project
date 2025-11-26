@@ -1,0 +1,57 @@
+name: Run lightweight tests & verify code integrity
+on:
+  push:
+    branches:
+      - 'feature/**' # when modifies are made to any feature branch
+    paths-ignore:
+      - 'infra/**'
+  workflow_dispatch:
+
+jobs:
+  pre-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web_app
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v3
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-verison: 18
+          cache: npm
+          cache-dependency-path: web_app/package-lock.json
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm # internal dependecies
+          key: node-modules-${{ hashFiles('**/package-lock.json')}}
+
+      - name: Install dependencies
+        run: npm ci # install dependencies from package-lock.json
+
+      # TEST STEPS!!
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run lint tests
+        run: |
+          echo "Running lint and formatting tests..."
+          npm run lint
+
+      - name: Checking formatting
+        run: npx prettier --check .
+
+      - name: Detect dead code # unused exports
+        run: lost-coders/deadcode-action@v0.1.0
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests."
+          npm test
+

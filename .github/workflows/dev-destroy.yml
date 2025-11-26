@@ -1,0 +1,39 @@
+name: Destroy Dev Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'destroy-dev' to confirm you really want to destroy the DEV environment"
+        required: true
+        type: string
+
+jobs:
+  destroy-dev:
+    if: ${{ github.event.inputs.confirm == 'destroy-dev' }}
+    runs-on: ubuntu-latest
+    # environment: dev  # you can add required reviewers
+
+    defaults:
+      run:
+        working-directory: infra/env/dev
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve

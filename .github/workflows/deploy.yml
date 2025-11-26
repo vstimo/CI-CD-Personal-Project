@@ -46,7 +46,7 @@ jobs:
             echo "Using image tag from input: $INPUT_IMAGE_TAG"
             IMAGE_TAG="$INPUT_IMAGE_TAG"
           else
-            S3_KEY="${ARTIFACTS_PREFIX}/image_tag.txt"
+            S3_KEY="${ARTIFACTS_PREFIX}/latest-image-tag.txt"
             echo "No image_tag input provided, downloading from s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
             aws s3 cp "s3://${ARTIFACTS_BUCKET}/${S3_KEY}" ./image_tag.txt
             IMAGE_TAG=$(cat image_tag.txt)

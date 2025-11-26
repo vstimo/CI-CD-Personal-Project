@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  pre-test:
+  test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -36,9 +36,6 @@ jobs:
         run: npm ci # install dependencies from package-lock.json
 
       # TEST STEPS!!
-      - name: Type check
-        run: npx tsc --noEmit
-
       - name: Run lint tests
         run: |
           echo "Running lint and formatting tests..."

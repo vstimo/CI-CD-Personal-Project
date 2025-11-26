@@ -10,12 +10,6 @@ jobs:
       run:
         working-directory: infra/env/dev
 
-      env:
-        AWS_REGION: us-east-1
-        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-        ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
-        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-
     steps:
       - name: Download the code
         uses: actions/checkout@v3
@@ -49,6 +43,11 @@ jobs:
       #   run: terraform apply -auto-approve
 
       - name: Build full image URL from tag
+        env:
+          AWS_REGION: us-east-1
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
         run: |
           IMAGE_TAG=$(cat image_tag.txt)
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${ECR_REPOSITORY}:${IMAGE_TAG}

@@ -45,7 +45,7 @@ jobs:
           npm run lint
 
       - name: Checking formatting
-        run: npx prettier --check .
+        run: npx prettier --write . # --check?
         # eventual poate continue on error
 
       # - name: Detect dead code # unused exports

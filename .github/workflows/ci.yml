@@ -69,3 +69,12 @@ jobs:
 
               docker build -t "$IMAGE_NAME" .
               docker push "$IMAGE_NAME"
+
+              echo "$IMAGE_TAG" > ../image_tag.txt
+
+      - name: Upload image tag artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-tag
+          path: image_tag.txt
+

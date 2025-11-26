@@ -1,5 +1,11 @@
 name: Deploy to dev-env
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (optional). If empty, the short GITHUB_SHA will be used.'
+        required: false
+        default: ''
 
 jobs:
   deploy:
@@ -14,18 +20,6 @@ jobs:
       - name: Download the code
         uses: actions/checkout@v3
 
-      # - name: Download image metadata artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: image-tag
-
-      # - name: Download image metadata artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: image-tag
-      #     run-id: ${{ github.event.workflow_run.id }}
-      #     repository: ${{ github.repository }}
-
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -34,38 +28,23 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # - name: Build full image URL from tag
-      #   run: |
-      #     IMAGE_TAG=$(cat image_tag.txt)
-      #     echo "IMAGE_TAG from artifact: $IMAGE_TAG"
-
-      #     IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${ECR_REPOSITORY}:${IMAGE_TAG}
-      #     echo "Full IMAGE_NAME: $IMAGE_NAME"
-
-      #     # expose to later steps and to Terraform as TF_VAR_image
-      #     echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-      #     echo "TF_VAR_image=$IMAGE_NAME" >> $GITHUB_ENV
-
-      # - name: Terraform Init
-      #   run: terraform init
-
-      # - name: Terraform Plan
-      #   run: terraform plan
-
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve
-
       - name: Build full image URL from tag
         env:
+          # input from workflow_dispatch; will be empty string if not provided
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
         run: |
-          IMAGE_TAG=${GITHUB_SHA::8}
+          if [ -n "$INPUT_IMAGE_TAG" ]; then
+            IMAGE_TAG="$INPUT_IMAGE_TAG"
+          else
+            IMAGE_TAG=${GITHUB_SHA::8}
+          fi
           echo "IMAGE_TAG: $IMAGE_TAG"
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${ECR_REPOSITORY}:${IMAGE_TAG}
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV

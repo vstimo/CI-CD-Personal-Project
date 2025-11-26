@@ -43,9 +43,10 @@ jobs:
 
       - name: Checking formatting
         run: npx prettier --check .
+        # eventual poate continue on error
 
       - name: Detect dead code # unused exports
-        run: lost-coders/deadcode-action@v0.1.0
+        run: vardius/deadcode-action@v1
 
       - name: Run unit tests
         run: |

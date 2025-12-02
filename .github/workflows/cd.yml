@@ -1,4 +1,4 @@
-name: Deploy to dev-env
+name: Deploy to environment
 on:
   workflow_dispatch:
     inputs:
@@ -12,8 +12,8 @@ on:
           - test
           - prod
       image_tag:
-        description: 'Image tag to deploy (optional). If empty, the latest tag will be used.'
-        required: false
+        description: 'Image tag to deploy.'
+        required: true
         default: ''
 
 jobs:
@@ -45,21 +45,8 @@ jobs:
           INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
-          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-          ARTIFACTS_BUCKET: timo-artifact-bucket
-          ARTIFACTS_PREFIX: dev # asta ar trebui sa o schimb
         run: |
-          if [ -n "$INPUT_IMAGE_TAG" ]; then
-            echo "Using image tag from input: $INPUT_IMAGE_TAG"
-            IMAGE_TAG="$INPUT_IMAGE_TAG"
-          else
-            S3_KEY="${ARTIFACTS_PREFIX}/latest-image-tag.txt"
-            echo "No image_tag input provided, downloading from s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
-            aws s3 cp "s3://${ARTIFACTS_BUCKET}/${S3_KEY}" ./image_tag.txt
-            IMAGE_TAG=$(cat image_tag.txt)
-            echo "Using image tag from S3: $IMAGE_TAG"
-          fi
-
+          IMAGE_TAG="$INPUT_IMAGE_TAG"
           echo "IMAGE_TAG: $IMAGE_TAG"
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${ECR_REPOSITORY}:${IMAGE_TAG}
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV

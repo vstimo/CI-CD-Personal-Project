@@ -22,10 +22,10 @@ jobs:
         with:
           fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
 
-      - name: Ensure release is ONLY from main
+      - name: Ensure release is ONLY made from main
         run: |
           if [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            echo "This workflow can only be run on the main branch."
+            echo "::error::This workflow can only be run on the main branch."
             exit 1
           fi
 
@@ -54,7 +54,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Build full image URL from tag
+      - name: Create full image URL from tag
         env:
           GIT_TAG: ${{ github.event.inputs.git_tag }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}

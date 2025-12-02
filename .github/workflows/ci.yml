@@ -20,7 +20,6 @@ on:
       - synchronize # runs again when commits are pushed to the PR
       - reopened
 
-
 # dev branches will add the tag with dev,
 # so I should use tags like:  :dev, :tst, :prd
 # NOT latest because latest may be different by the latest of tomorrow
@@ -35,8 +34,22 @@ jobs:
         working-directory: web_app
 
     steps:
-      - name: Get code # download the code from the repo
+      # Daca am o valoare in textfieldul de tag_value, atunci fac descarc codul de la acel commit/tag
+      - name: Get code from a specified commit/tag
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '' }}
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
+          ref: ${{ github.event.inputs.tag_value }}
+
+
+      # Otherwise, descarc codul de la latest commit on the branch or from the PR
+      - name: Get code
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '') }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
+          ref: ${{ github.sha }}
 
       - name: Setup AWS ECR Details
         uses: aws-actions/configure-aws-credentials@v1
@@ -59,51 +72,55 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
           INPUT_CHECKPOINT: ${{ github.event.inputs.checkpoint }}
           INPUT_TAG_VALUE: ${{ github.event.inputs.tag_value }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
-              echo "ECR_REGISTRY: $ECR_REGISTRY"
-              echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
-              echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-              echo "GITHUB_SHA: $GITHUB_SHA"
-              echo "INPUT_CHECKPOINT: $INPUT_CHECKPOINT"
-              echo "INPUT_TAG_VALUE: $INPUT_TAG_VALUE"
-              echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+            echo "ECR_REGISTRY: $ECR_REGISTRY"
+            echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
+            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+            echo "GITHUB_SHA: $GITHUB_SHA"
+            echo "INPUT_CHECKPOINT: $INPUT_CHECKPOINT"
+            echo "INPUT_TAG_VALUE: $INPUT_TAG_VALUE"
+            echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
 
-              # Decide the image tag based on the pipeline inputs
-              if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
-                echo "Triggered by PR - using short commit SHA as image tag"
-                IMAGE_TAG=${GITHUB_SHA::8}
+            # Decide the image tag based on the pipeline inputs
+            if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
+              echo "Triggered by PR - using short commit SHA as image tag"
+              IMAGE_TAG=${GITHUB_SHA::8}
 
-              else
-                # MANUAL LOGIC
-                if [ "$INPUT_CHECKPOINT" = "true" ]; then # use git tag
+            else
+              # MANUAL LOGIC
+              if [ "$INPUT_CHECKPOINT" = "true" ]; then # use git tag
 
-                  if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
-                    echo "Using provided tag value as image tag: $INPUT_TAG_VALUE"
-                    IMAGE_TAG=$INPUT_TAG_VALUE
-                  else # folosesc cel mai recent git tag
-                    echo "No tag value provided, fetching latest git tag"
-                    IMAGE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-                    echo "Using latest git tag as image tag: $IMAGE_TAG"
-                  fi
+                if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
+                  echo "Using provided tag value as image tag: $INPUT_TAG_VALUE"
+                  IMAGE_TAG=$INPUT_TAG_VALUE
+                else # folosesc cel mai recent git tag
+                  echo "No tag value provided, fetching latest git tag"
+                  git fetch --tags
+                  IMAGE_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+                  echo "Using latest git tag as image tag: $IMAGE_TAG"
 
-                else # use commit ID
-
-                  if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
-                    echo "Using provided commit ID as image tag: $INPUT_TAG_VALUE"
-                    IMAGE_TAG=$INPUT_TAG_VALUE
-                  else
-                    echo "Using short commit SHA as image tag"
-                    IMAGE_TAG=${GITHUB_SHA::8}
-                  fi
-
+                  git checkout "$IMAGE_TAG"
                 fi
+
+              else # use commit ID
+
+                if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
+                  echo "Using provided commit ID as image tag: $INPUT_TAG_VALUE"
+                  IMAGE_TAG=$INPUT_TAG_VALUE
+                else
+                  echo "Using short commit SHA as image tag"
+                  IMAGE_TAG=${GITHUB_SHA::8}
+                fi
+
               fi
+            fi
 
-              IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
-              echo "IMAGE_NAME: $IMAGE_NAME"
+            IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "IMAGE_NAME: $IMAGE_NAME"
 
-              docker build -t "$IMAGE_NAME" .
-              docker push "$IMAGE_NAME"
+            docker build -t "$IMAGE_NAME" .
+            docker push "$IMAGE_NAME"
 
       #        echo "$IMAGE_TAG" > ../image_tag.txt
 

@@ -2,14 +2,8 @@ name: Build App and Push Image to ECR
 on:
   workflow_dispatch:
     inputs:
-      checkpoint:
-        description: 'Use git tag instead of a commit?'
-        type: boolean
-        required: true
-        default: false
-
       tag_value:
-        description: 'Commit ID or git tag. If empty, uses the latest commit/tag.'
+        description: 'Commit ID or git tag. If empty, it uses the latest commit.'
         required: false
         type: string
   pull_request:
@@ -70,68 +64,42 @@ jobs:
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           GITHUB_SHA: ${{ github.sha }}
-          INPUT_CHECKPOINT: ${{ github.event.inputs.checkpoint }}
           INPUT_TAG_VALUE: ${{ github.event.inputs.tag_value }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
-            echo "ECR_REGISTRY: $ECR_REGISTRY"
-            echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
-            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-            echo "GITHUB_SHA: $GITHUB_SHA"
-            echo "INPUT_CHECKPOINT: $INPUT_CHECKPOINT"
-            echo "INPUT_TAG_VALUE: $INPUT_TAG_VALUE"
-            echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "ECR_REGISTRY: $ECR_REGISTRY"
+          echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
+          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "INPUT_TAG_VALUE: $INPUT_TAG_VALUE"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
 
-            # Decide the image tag based on the pipeline inputs
-            if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
-              echo "Triggered by PR - using short commit SHA as image tag"
+          # Decide the image tag based on the pipeline inputs
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
+            echo "Triggered by PR - using short commit SHA as image tag"
+            IMAGE_TAG=${GITHUB_SHA::8}
+
+          else
+            # MANUAL mode
+            if [ -z "$INPUT_TAG_VALUE" ]; then # USE LATEST COMMIT
+              echo "No tag_value provided - using short commit SHA as image tag"
               IMAGE_TAG=${GITHUB_SHA::8}
 
             else
-              # MANUAL LOGIC
-              if [ "$INPUT_CHECKPOINT" = "true" ]; then # use git tag
-
-                if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
-                  echo "Using provided tag value as image tag: $INPUT_TAG_VALUE"
-                  IMAGE_TAG=$INPUT_TAG_VALUE
-                else # folosesc cel mai recent git tag
-                  echo "No tag value provided, fetching latest git tag"
-                  git fetch --tags
-                  IMAGE_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-                  echo "Using latest git tag as image tag: $IMAGE_TAG"
-
-                  git checkout "$IMAGE_TAG"
-                fi
-
-              else # use commit ID
-
-                if [ -n "$INPUT_TAG_VALUE" ]; then # folosesc valoarea din input
-                  echo "Using provided commit ID as image tag: $INPUT_TAG_VALUE"
-                  IMAGE_TAG=$INPUT_TAG_VALUE
-                else
-                  echo "Using short commit SHA as image tag"
-                  IMAGE_TAG=${GITHUB_SHA::8}
-                fi
-
+              if [[ "$INPUT_TAG_VALUE" =~ ^[0-9a-fA-F]{40}$ ]]; then # daca in textfield am avut un COMMIT ID
+                echo "tag_value looks like a commit SHA - treating as commit ID"
+                IMAGE_TAG=${INPUT_TAG_VALUE::8}
+              else # daca in textfield am avut un GIT TAG
+                echo "tag_value does NOT look like a commit SHA - treating as git tag name"
+                git fetch --tags || true
+                git checkout "$INPUT_TAG_VALUE"
+                IMAGE_TAG=$INPUT_TAG_VALUE
               fi
             fi
+          fi
 
-            IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
-            echo "IMAGE_NAME: $IMAGE_NAME"
+          IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "IMAGE_NAME: $IMAGE_NAME"
 
-            docker build -t "$IMAGE_NAME" .
-            docker push "$IMAGE_NAME"
-
-      #        echo "$IMAGE_TAG" > ../image_tag.txt
-
-      # ASTA l-am folosit inainte pentru a face upload la image tag-ul latest pe S3, pt a fi folosit la deploy
-      # - name: Upload image_tag.txt to S3
-      #   env:
-      #     ARTIFACTS_BUCKET: timo-artifact-bucket
-      #     ARTIFACTS_PREFIX: dev   # or take from secret / env if you prefer
-      #   run: |
-      #     # path in S3 where we always store "latest" tag for dev
-      #     S3_KEY="${ARTIFACTS_PREFIX}/latest-image-tag.txt"
-
-      #     echo "Uploading image_tag.txt to s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
-      #     aws s3 cp ../image_tag.txt "s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
+          docker build -t "$IMAGE_NAME" .
+          docker push "$IMAGE_NAME"

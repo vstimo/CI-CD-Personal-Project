@@ -1,17 +1,9 @@
-name: Deploy to environment
+name: Release and deploy to prod
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - test
-      image_tag:
-        description: 'Image tag to deploy.'
+      git_tag:
+        description: 'Git tag to deploy env from.'
         required: true
         default: ''
 
@@ -21,7 +13,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: infra/env/${{ github.event.inputs.environment }}
+        working-directory: infra/env/prod
 
     steps:
       - name: Download the code

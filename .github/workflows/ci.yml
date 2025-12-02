@@ -77,7 +77,7 @@ jobs:
           # Decide the image tag based on the pipeline inputs
           if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
             echo "Triggered by PR - using short commit SHA as image tag"
-            IMAGE_TAG=${GITHUB_SHA::8}
+            IMAGE_TAG=${GITHUB_SHA}#::8}
 
           else
             # MANUAL mode

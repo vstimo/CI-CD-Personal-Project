@@ -1,8 +1,6 @@
 name: Release and deploy to prod
 on:
   workflow_dispatch:
-    branches:
-      - main
     inputs:
       git_tag:
         description: 'Git tag to deploy env from.'
@@ -11,6 +9,7 @@ on:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     defaults:

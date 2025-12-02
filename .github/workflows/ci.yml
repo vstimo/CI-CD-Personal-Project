@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
     inputs:
       tag_value:
-        description: 'Commit ID or git tag. If empty, it uses the latest commit.'
-        required: false
+        description: 'Commit ID or git tag.'
+        required: true
         type: string
   pull_request:
     branches:

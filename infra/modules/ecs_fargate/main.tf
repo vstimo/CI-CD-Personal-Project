@@ -5,9 +5,6 @@ resource "aws_ecs_cluster" "cluster"{
     }
 }
 
-# -----------------------------
-# Task Definition: WHAT to run (image, port, resources, logging)
-# -----------------------------
 resource "aws_ecs_task_definition" "task" {
   family                   = "${var.project}-${var.environment}"
   requires_compatibilities = ["FARGATE"]   # serverless containers

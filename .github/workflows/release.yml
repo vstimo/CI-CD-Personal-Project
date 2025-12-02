@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Download the code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3

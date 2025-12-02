@@ -8,7 +8,7 @@ function App() {
         <div id="logo-img">
           <img src={logo} />
         </div>
-        <h1>Timo modification BEST MODIFICATION</h1>
+        <h1>This is Timo main branch</h1>
       </header>
       <MainContent />
     </>

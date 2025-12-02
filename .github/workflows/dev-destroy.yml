@@ -3,20 +3,27 @@ name: Destroy Dev Environment
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Select environment to destroy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
       confirm:
-        description: "Type 'destroy-dev' to confirm you really want to destroy the DEV environment"
+        description: "Type 'destroy' to confirm"
         required: true
         type: string
 
 jobs:
-  destroy-dev:
-    if: ${{ github.event.inputs.confirm == 'destroy-dev' }}
+  destroy-env:
+    if: ${{ github.event.inputs.confirm == format('destroy', github.event.inputs.environment) }}
     runs-on: ubuntu-latest
-    # environment: dev  # you can add required reviewers
 
     defaults:
       run:
-        working-directory: infra/env/dev
+        working-directory: infra/env/${{ github.event.inputs.environment }}
 
     env:
       AWS_REGION: us-east-1

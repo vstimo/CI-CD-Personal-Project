@@ -48,8 +48,8 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
           IMAGE_TAG="$INPUT_IMAGE_TAG"
-          echo "IMAGE_TAG: $IMAGE_TAG"
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${ECR_REPOSITORY}:${IMAGE_TAG}
+          echo "IMAGE_NAME: $IMAGE_NAME"
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: Terraform Init

@@ -82,4 +82,3 @@ jobs:
 
           echo "Uploading image_tag.txt to s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
           aws s3 cp ../image_tag.txt "s3://${ARTIFACTS_BUCKET}/${S3_KEY}"
-

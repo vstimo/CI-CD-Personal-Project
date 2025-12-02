@@ -2,19 +2,27 @@ name: Deploy to dev-env
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
       image_tag:
-        description: 'Image tag to deploy (optional). If empty, the short GITHUB_SHA will be used.'
+        description: 'Image tag to deploy (optional). If empty, the latest tag will be used.'
         required: false
         default: ''
 
 jobs:
   deploy:
-    # if: ${{ github.event.workfow_run.conclusion == 'success'}}
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: infra/env/dev
+        working-directory: infra/env/${{ github.event.inputs.environment }}
 
     steps:
       - name: Download the code
@@ -34,13 +42,12 @@ jobs:
 
       - name: Build full image URL from tag
         env:
-          # input from workflow_dispatch; will be empty string if not provided
           INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           ARTIFACTS_BUCKET: timo-artifact-bucket
-          ARTIFACTS_PREFIX: dev
+          ARTIFACTS_PREFIX: dev # asta ar trebui sa o schimb
         run: |
           if [ -n "$INPUT_IMAGE_TAG" ]; then
             echo "Using image tag from input: $INPUT_IMAGE_TAG"

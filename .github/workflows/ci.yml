@@ -52,11 +52,17 @@ jobs:
           fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
           ref: ${{ github.sha }} # get the last commit
 
-      - name: Run SAST Scan
+      - name: Set up CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+
+      - name: Autobuild CodeQL
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Run SAST Scan (Analyze)
         if: ${{ github.event.inputs.sast_checkpoint == true }}
         uses: github/codeql-action/analyze@v2
-        with:
-          category: '/language:javascript'
 
       # - name: Build Docker image for DAST
       #   if: ${{ github.event.inputs.dast_checkpoint == 'true' }}

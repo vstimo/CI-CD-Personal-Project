@@ -32,9 +32,9 @@ jobs:
       contents: read
       security-events: write
       actions: read
-      defaults:
-        run:
-          working-directory: web_app
+    defaults:
+      run:
+        working-directory: web_app
 
     if: >
       github.event_name == 'pull_request' ||

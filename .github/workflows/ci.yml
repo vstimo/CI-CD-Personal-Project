@@ -4,7 +4,7 @@ on:
     inputs:
       tag_value:
         description: 'Commit ID or git tag.'
-        required: true
+        required: false
         type: string
       sast_checkpoint:
         description: 'Run SAST'

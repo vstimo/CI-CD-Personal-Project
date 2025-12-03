@@ -8,7 +8,7 @@ function App() {
         <div id="logo-img">
           <img src={logo} />
         </div>
-        <h1>cristi-branch: new version incoming</h1>
+        <h1>cristi-branch: small change</h1>
       </header>
       <MainContent />
     </>

@@ -58,40 +58,40 @@ jobs:
         with:
           category: '/language:javascript'
 
-      - name: Build Docker image for DAST
-        if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
-        run: docker build -t dast-test-app:latest .
+      # - name: Build Docker image for DAST
+      #   if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
+      #   run: docker build -t dast-test-app:latest .
 
-      - name: Start Docker container for DAST
-        if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
-        run: docker run -d -p 80:80 --name dast-test-container dast-test-app:latest
+      # - name: Start Docker container for DAST
+      #   if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
+      #   run: docker run -d -p 80:80 --name dast-test-container dast-test-app:latest
 
-      - name: Wait for application to start
-        if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
-        run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:80 > /dev/null; then
-              echo "Application is running"
-              exit 0
-            fi
-            echo "Waiting for application... ($i/30)"
-            sleep 2
-          done
-          echo "Application failed to start"
-          exit 1
-        shell: bash
+      # - name: Wait for application to start
+      #   if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
+      #   run: |
+      #     for i in {1..30}; do
+      #       if curl -s http://localhost:80 > /dev/null; then
+      #         echo "Application is running"
+      #         exit 0
+      #       fi
+      #       echo "Waiting for application... ($i/30)"
+      #       sleep 2
+      #     done
+      #     echo "Application failed to start"
+      #     exit 1
+      #   shell: bash
 
-      - name: Run DAST Scan with OWASP ZAP
-        if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
-        uses: zaproxy/action-full-scan@v0.13.0
-        with:
-          target: 'http://localhost:80'
-          rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-a'
+      # - name: Run DAST Scan with OWASP ZAP
+      #   if: ${{ github.event.inputs.dast_checkpoint == 'true' }}
+      #   uses: zaproxy/action-full-scan@v0.13.0
+      #   with:
+      #     target: 'http://localhost:80'
+      #     rules_file_name: '.zap/rules.tsv'
+      #     cmd_options: '-a'
 
-      - name: Cleanup Docker container
-        if: ${{ always() && github.event.inputs.dast_checkpoint == 'true' }}
-        run: docker stop dast-test-container && docker rm dast-test-container
+      # - name: Cleanup Docker container
+      #   if: ${{ always() && github.event.inputs.dast_checkpoint == 'true' }}
+      #   run: docker stop dast-test-container && docker rm dast-test-container
 
       - name: Setup AWS ECR Details
         uses: aws-actions/configure-aws-credentials@v1

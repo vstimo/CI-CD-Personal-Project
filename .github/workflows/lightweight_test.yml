@@ -20,6 +20,8 @@ jobs:
 
       - name: Load & Cache Dependencies
         uses: ./.github/actions/cached-deps
+        with:
+          working-directory: web_app
 
       - name: Build Project
         run: npm run build
@@ -36,6 +38,8 @@ jobs:
 
       - name: Load & Cache Dependencies
         uses: ./.github/actions/cached-deps
+        with:
+          working-directory: web_app
 
       - name: Run lint tests
         run: |
@@ -54,6 +58,8 @@ jobs:
 
       - name: Load & Cache Dependencies
         uses: ./.github/actions/cached-deps
+        with:
+          working-directory: web_app
 
       - name: Checking formatting
         run: npx prettier --write . # --check?
@@ -70,6 +76,8 @@ jobs:
 
       - name: Load & Cache Dependencies
         uses: ./.github/actions/cached-deps
+        with:
+          working-directory: web_app
 
       - name: Run unit tests
         run: |

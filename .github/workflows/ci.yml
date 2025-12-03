@@ -53,15 +53,17 @@ jobs:
           ref: ${{ github.sha }} # get the last commit
 
       - name: Set up CodeQL
+        if: ${{ github.event.inputs.sast_checkpoint == 'true' }}
         uses: github/codeql-action/init@v3.28.21
         with:
           languages: javascript
 
       - name: Autobuild CodeQL
+        if: ${{ github.event.inputs.sast_checkpoint == 'true' }}
         uses: github/codeql-action/autobuild@v3.28.21
 
       - name: Run SAST Scan (Analyze)
-        if: ${{ github.event.inputs.sast_checkpoint == true }}
+        if: ${{ github.event.inputs.sast_checkpoint == 'true' }}
         uses: github/codeql-action/analyze@v3.28.21
 
       # - name: Build Docker image for DAST

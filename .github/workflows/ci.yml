@@ -79,13 +79,10 @@ jobs:
   dast:
     runs-on: ubuntu-latest
     permissions:
-      # contents: read
-      # security-events: write
-      # actions: read
       issues: write
-      defaults:
-        run:
-          working-directory: web_app
+    defaults:
+      run:
+        working-directory: web_app
 
     if: >
       github.event_name == 'pull_request' ||

@@ -13,6 +13,18 @@ on:
       - opened
       - synchronize # runs again when commits are pushed to the PR
       - reopened
+  inputs:
+    sast_checkpoint:
+      description: 'Run SAST'
+      required: true
+      default: 'true'
+      type: boolean
+    dast_checkpoint:
+      description: 'Run DAST'
+      required: true
+      default: 'true'
+      type: boolean
+
 
 jobs:
   build:

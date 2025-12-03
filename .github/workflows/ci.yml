@@ -115,6 +115,7 @@ jobs:
           INPUT_TAG_VALUE: ${{ github.event.inputs.tag_value }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
+          echo " ${{ github.event.inputs.sast_checkpoint }} "
           echo "ECR_REGISTRY: $ECR_REGISTRY"
           echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
           echo "ECR_REPOSITORY: $ECR_REPOSITORY"

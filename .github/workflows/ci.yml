@@ -14,10 +14,6 @@ on:
       - synchronize # runs again when commits are pushed to the PR
       - reopened
 
-# dev branches will add the tag with dev,
-# so I should use tags like:  :dev, :tst, :prd
-# NOT latest because latest may be different by the latest of tomorrow
-
 jobs:
   build:
     runs-on: ubuntu-latest

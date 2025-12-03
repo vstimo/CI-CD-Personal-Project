@@ -11,7 +11,7 @@ on:
           - dev
           - test
       image_tag:
-        description: 'Image tag to deploy.'
+        description: 'Commit ID or tag. Image tag to deploy.'
         required: true
         default: ''
 

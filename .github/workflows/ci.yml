@@ -6,6 +6,17 @@ on:
         description: 'Commit ID or git tag.'
         required: true
         type: string
+      sast_checkpoint:
+        description: 'Run SAST'
+        required: true
+        default: 'true'
+        type: choice
+      dast_checkpoint:
+        description: 'Run DAST'
+        required: true
+        default: 'true'
+        type: choice
+
   pull_request:
     branches:
       - main # THE TRUNK
@@ -13,18 +24,6 @@ on:
       - opened
       - synchronize # runs again when commits are pushed to the PR
       - reopened
-  inputs:
-    sast_checkpoint:
-      description: 'Run SAST'
-      required: true
-      default: 'true'
-      type: boolean
-    dast_checkpoint:
-      description: 'Run DAST'
-      required: true
-      default: 'true'
-      type: boolean
-
 
 jobs:
   build:
@@ -36,7 +35,7 @@ jobs:
         working-directory: web_app
 
     steps:
-      # Daca am o valoare in textfieldul de tag_value, atunci fac descarc codul de la acel commit/tag
+      # Daca am o valoare in textfieldul de tag_value, atunci descarc codul de la acel commit/tag
       - name: Get code from a specified commit/tag
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '' }}
         uses: actions/checkout@v3

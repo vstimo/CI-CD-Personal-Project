@@ -26,18 +26,19 @@ on:
       - reopened
 
 jobs:
-  build:
+  sast:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
       actions: read
-      issues: write
+      defaults:
+        run:
+          working-directory: web_app
 
-    # This tells Github action so that for each run: command to execute it inside the web_app folder INSTEAD of the repo root
-    defaults:
-      run:
-        working-directory: web_app
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
 
     steps:
       # Daca am o valoare in textfieldul de tag_value, atunci descarc codul de la acel commit/tag
@@ -75,6 +76,35 @@ jobs:
         with:
           category: '/language:javascript'
 
+  dast:
+    runs-on: ubuntu-latest
+    permissions:
+      # contents: read
+      # security-events: write
+      # actions: read
+      issues: write
+      defaults:
+        run:
+          working-directory: web_app
+
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+
+    steps:
+      # Daca am o valoare in textfieldul de tag_value, atunci descarc codul de la acel commit/tag
+      - name: Get code from a specified commit/tag
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '' }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
+          ref: ${{ github.event.inputs.tag_value }}
+
+      # Otherwise, descarc codul de la latest commit on the branch or from the PR
+      - name: Get code
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '') }}
+        uses: actions/checkout@v3
+
       - name: Build Docker image for DAST
         if: >
           github.event_name == 'pull_request' ||
@@ -111,14 +141,33 @@ jobs:
         uses: zaproxy/action-full-scan@v0.13.0
         with:
           target: 'http://localhost:80'
-          #rules_file_name: '.zap/rules.tsv'
-          #cmd_options: '-a'
 
       - name: Cleanup Docker container
         if: >
           github.event_name == 'pull_request' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         run: docker stop dast-test-container && docker rm dast-test-container
+
+  build-and-push:
+    needs: [sast, dast]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web_app
+
+    steps:
+      # Daca am o valoare in textfieldul de tag_value, atunci descarc codul de la acel commit/tag
+      - name: Get code from a specified commit/tag
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '' }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
+          ref: ${{ github.event.inputs.tag_value }}
+
+      # Otherwise, descarc codul de la latest commit on the branch or from the PR
+      - name: Get code
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '') }}
+        uses: actions/checkout@v3
 
       - name: Setup AWS ECR Details
         uses: aws-actions/configure-aws-credentials@v1

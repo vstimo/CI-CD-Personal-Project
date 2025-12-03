@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
+  build-and-upload:
     runs-on: ubuntu-latest
 
     defaults:
@@ -38,14 +38,29 @@ jobs:
       - name: Build Project
         run: npm run build
 
+      - name: Upload web_app artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: web_app_build
+          path: web_app
+
   lint-tests:
     runs-on: ubuntu-latest
-
+    needs: build-and-upload
     defaults:
       run:
         working-directory: web_app
-    needs: setup
+
     steps:
+      - name: Get code
+        uses: actions/checkout@v3
+
+      - name: Download web_app
+        uses: actions/download-artifact@v3
+        with:
+          name: web_app_build
+          path: .
+
       - name: Run lint tests
         run: |
           echo "Running lint and formatting tests..."
@@ -53,13 +68,21 @@ jobs:
 
   format-tests:
     runs-on: ubuntu-latest
-
+    needs: build-and-upload
     defaults:
       run:
         working-directory: web_app
-    needs: setup
 
     steps:
+      - name: Get code
+        uses: actions/checkout@v3
+
+      - name: Download web_app
+        uses: actions/download-artifact@v3
+        with:
+          name: web_app_build
+          path: .
+
       - name: Checking formatting
         run: npx prettier --write . # --check?
 
@@ -67,16 +90,23 @@ jobs:
       #   run: vardius/deadcode-action@v1
         # eventual poate continue on error
 
-
   unit-tests:
     runs-on: ubuntu-latest
-
+    needs: build-and-upload
     defaults:
       run:
         working-directory: web_app
-    needs: setup
 
     steps:
+      - name: Get code
+        uses: actions/checkout@v3
+
+      - name: Download web_app
+        uses: actions/download-artifact@v3
+        with:
+          name: web_app_build
+          path: .
+
       - name: Run unit tests
         run: |
           echo "Running unit tests."

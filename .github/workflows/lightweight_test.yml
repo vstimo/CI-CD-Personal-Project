@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
 
     defaults:
@@ -22,7 +22,7 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@v3
         with:
-          node-verison: 18
+          node-version: 18
           cache: npm
           cache-dependency-path: web_app/package-lock.json
 
@@ -38,19 +38,45 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # TEST STEPS!!
+  lint-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web_app
+    needs: setup
+    steps:
       - name: Run lint tests
         run: |
           echo "Running lint and formatting tests..."
           npm run lint
 
+  format-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web_app
+    needs: setup
+
+    steps:
       - name: Checking formatting
         run: npx prettier --write . # --check?
-        # eventual poate continue on error
 
       # - name: Detect dead code # unused exports
       #   run: vardius/deadcode-action@v1
+        # eventual poate continue on error
 
+
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web_app
+    needs: setup
+
+    steps:
       - name: Run unit tests
         run: |
           echo "Running unit tests."

@@ -17,4 +17,5 @@ module "ecs_fargate" {
   alb_sg = module.alb.alb_sg
   target_group_arn = module.alb.alb_tg
   image = var.image
+  desired_count = 2
 }

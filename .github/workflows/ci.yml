@@ -146,6 +146,7 @@ jobs:
         run: docker stop dast-test-container && docker rm dast-test-container
 
   build-and-push:
+    needs: [sast, dast]
     if: |
       always() &&
       (needs.sast.result == 'success' || needs.sast.result == 'skipped') &&

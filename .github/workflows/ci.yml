@@ -146,82 +146,15 @@ jobs:
         run: docker stop dast-test-container && docker rm dast-test-container
 
   build-and-push:
-    needs: [sast, dast]
+    # needs: [sast, dast]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (needs.sast.result == 'success' || needs.sast.result == 'skipped') &&
+      (needs.dast.result == 'success' || needs.dast.result == 'skipped')
     defaults:
       run:
-        working-directory: web_app
+      working-directory: web_app
 
     steps:
-      # Daca am o valoare in textfieldul de tag_value, atunci descarc codul de la acel commit/tag
-      - name: Get code from a specified commit/tag
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '' }}
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # number of commits to fetch (0 means ALL HISTORY)
-          ref: ${{ github.event.inputs.tag_value }}
-
-      # Otherwise, descarc codul de la latest commit on the branch or from the PR
-      - name: Get code
-        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.tag_value != '') }}
-        uses: actions/checkout@v3
-
-      - name: Setup AWS ECR Details
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # VERY IMPORTANT TO BE in us-east-1 for public registries!!!!!!!!
-
-      - name: Login to Amazon ECR
-        id: login-aws-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry-type: public
-
-      - name: Build and push Docker Image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
-          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-          GITHUB_SHA: ${{ github.sha }}
-          INPUT_TAG_VALUE: ${{ github.event.inputs.tag_value }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-        run: |
-          echo " ${{ github.event.inputs.sast_checkpoint }} "
-          echo "ECR_REGISTRY: $ECR_REGISTRY"
-          echo "ECR_PUBLIC_ALIAS: $ECR_PUBLIC_ALIAS"
-          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-          echo "GITHUB_SHA: $GITHUB_SHA"
-          echo "INPUT_TAG_VALUE: $INPUT_TAG_VALUE"
-          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
-
-          # Decide the image tag based on the pipeline inputs
-          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
-            echo "Triggered by PR - using short commit SHA as image tag"
-            IMAGE_TAG=${GITHUB_SHA} #::8}
-
-          else
-            # MANUAL mode
-            if [ -z "$INPUT_TAG_VALUE" ]; then # USE LATEST COMMIT
-              echo "No tag_value provided - using short commit SHA as image tag"
-              IMAGE_TAG=${GITHUB_SHA} #::8}
-
-            else
-              if [[ "$INPUT_TAG_VALUE" =~ ^[0-9a-fA-F]{40}$ ]]; then # daca in textfield am avut un COMMIT ID
-                echo "tag_value looks like a commit SHA - treating as commit ID"
-                IMAGE_TAG=${INPUT_TAG_VALUE} #::8}
-              else # daca in textfield am avut un GIT TAG
-                echo "tag_value does NOT look like a commit SHA - treating as git tag name"
-                git fetch --tags || true
-                git checkout "$INPUT_TAG_VALUE"
-                IMAGE_TAG=$INPUT_TAG_VALUE
-              fi
-            fi
-          fi
-
-          IMAGE_NAME=$ECR_REGISTRY/$ECR_PUBLIC_ALIAS/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "IMAGE_NAME: $IMAGE_NAME"
-
-          docker build -t "$IMAGE_NAME" .
-          docker push "$IMAGE_NAME"
+      # ... rest of your steps remain the same

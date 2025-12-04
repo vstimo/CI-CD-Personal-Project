@@ -55,5 +55,5 @@ variable "memory" {
 variable "desired_count" {
   description = "How many copies of the task to run."
   type        = number
-  default     = 1
+  default     = 2
 }

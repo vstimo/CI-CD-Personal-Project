@@ -60,6 +60,7 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
           REPO_NAME: ${{ secrets.REPO_NAME }}
+        # to verify whether the image tag was saved with either the commit SHA or the git tag name!!!!
         run: |
           COMMIT_SHA=$(git rev-parse "${GIT_TAG}")
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${REPO_NAME}:${COMMIT_SHA}

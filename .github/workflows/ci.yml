@@ -184,10 +184,6 @@ jobs:
         with:
           registry-type: public
 
-      - name: Debug AWS identity (GitHub)
-        run: |
-          aws sts get-caller-identity
-
       - name: Build and push Docker Image
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}

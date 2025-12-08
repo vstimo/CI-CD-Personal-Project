@@ -9,12 +9,12 @@ on:
       sast_checkpoint:
         description: 'Run SAST'
         required: true
-        default: 'true'
+        default: true
         type: boolean
       dast_checkpoint:
         description: 'Run DAST'
         required: true
-        default: 'true'
+        default: true
         type: boolean
 
   pull_request:
@@ -204,7 +204,7 @@ jobs:
           # Decide the image tag based on the pipeline inputs
           if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then # in PR mode use commit ID
             echo "Triggered by PR - using commit SHA as image tag"
-            IMAGE_TAG=${GITHUB_SHA} #::8}
+            IMAGE_TAG=${GITHUB_SHA}
 
           else
             # MANUAL mode

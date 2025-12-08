@@ -9,12 +9,12 @@ on:
       sast_checkpoint:
         description: 'Run SAST'
         required: true
-        default: 'true'
+        default: true
         type: boolean
       dast_checkpoint:
         description: 'Run DAST'
         required: true
-        default: 'true'
+        default: true
         type: boolean
 
   pull_request:

@@ -55,23 +55,23 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up CodeQL
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
         uses: github/codeql-action/init@v3.28.21
         with:
           languages: javascript
 
       - name: Autobuild CodeQL
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
         uses: github/codeql-action/autobuild@v3.28.21
 
       - name: Run SAST Scan (Analyze)
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.sast_checkpoint == 'true')
         uses: github/codeql-action/analyze@v3.28.21
         with:
           category: '/language:javascript'
@@ -103,21 +103,21 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker image for DAST
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         run: docker build -t dast-test-app:latest .
 
       - name: Start Docker container for DAST
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         run: docker run -d -p 80:80 --name dast-test-container dast-test-app:latest
 
       - name: Wait for application to start
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         run: |
           for i in {1..30}; do
             if curl -s http://localhost:80 > /dev/null; then
@@ -132,17 +132,17 @@ jobs:
         shell: bash
 
       - name: Run DAST Scan with OWASP ZAP
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         uses: zaproxy/action-full-scan@v0.13.0
         with:
           target: 'http://localhost:80'
 
       - name: Cleanup Docker container
-        if: >
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
+        # if: >
+        #   github.event_name == 'pull_request' ||
+        #   (github.event_name == 'workflow_dispatch' && github.event.inputs.dast_checkpoint == 'true')
         run: docker stop dast-test-container && docker rm dast-test-container
 
   build-and-push:
@@ -221,7 +221,6 @@ jobs:
                 git fetch --tags || true
                 git checkout "$INPUT_TAG_VALUE"
                 IMAGE_TAG=$(git rev-parse "${INPUT_TAG_VALUE}")
-                # IMAGE_TAG=$INPUT_TAG_VALUE
               fi
             fi
           fi

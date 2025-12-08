@@ -8,15 +8,19 @@ inputs:
     default: '.'
 
 runs:
-  using: 'composite' # must be composite
+  using: 'composite' # must be composite to support multiple steps
   steps:
+    # https://github.com/actions/setup-node
+    # Install and cache NodeJS dependencies
     - name: Install NodeJS
       uses: actions/setup-node@v3
       with:
         node-version: 18
-        cache: npm
-        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+        cache: npm # built-in caching for node modules
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json # path to package-lock.json
 
+    # https://github.com/actions/cache
+    # Custom caching for internal dependencies
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v3
@@ -24,6 +28,8 @@ runs:
         path: ~/.npm # internal dependecies
         key: node-modules-${{ hashFiles('**/package-lock.json')}}
 
+    # If restored, npm will reuse cached packages -> faster install
+    # If not restored, npm will download packages -> now cache will be saved
     - name: Install dependencies
       run: npm ci # install dependencies from package-lock.json
       shell: bash

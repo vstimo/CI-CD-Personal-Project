@@ -45,8 +45,41 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_PUBLIC_ALIAS: ${{ secrets.ECR_PUBLIC_ALIAS }}
           REPO_NAME: ${{ secrets.REPO_NAME }}
+        # run: |
+        #   IMAGE_TAG="$INPUT_IMAGE_TAG"
+        #   IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${REPO_NAME}:${IMAGE_TAG}
+        #   echo "IMAGE_NAME: $IMAGE_NAME"
+        #   echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+        # to verify whether the image tag was saved with either the commit SHA or the git tag name!!!!
         run: |
-          IMAGE_TAG="$INPUT_IMAGE_TAG"
+          image_exists(){
+            local image_tag="$1"
+            IMAGE_NAME="${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${REPO_NAME}:${image_tag}"
+
+            if docker manifest inspect "${IMAGE_NAME}" > /dev/null 2>&1; then
+              return 0  # Image exists
+            else
+              return 1  # Image does not exist
+            fi
+          }
+
+          if [[ "$INPUT_IMAGE_TAG" =~ ^[0-9a-fA-F]{40}$ ]]; then # daca in textfield am avut un COMMIT ID
+                echo "tag_value looks like a commit SHA"
+                IMAGE_TAG=${INPUT_IMAGE_TAG} #::8}
+            else # daca in textfield am avut un GIT TAG
+                echo "tag_value is a git tag name"
+                git fetch --tags || true
+                git checkout "$INPUT_IMAGE_TAG"
+                IMAGE_TAG=$(git rev-parse "${INPUT_IMAGE_TAG}")
+          fi
+
+          if image_exists "${IMAGE_TAG}"; then
+            echo "Image found with commit SHA: ${IMAGE_TAG}"
+          else
+            echo "No image found for git tag ${IMAGE_TAG}. Exiting."
+            exit 1
+          fi
+
           IMAGE_NAME=${ECR_REGISTRY}/${ECR_PUBLIC_ALIAS}/${REPO_NAME}:${IMAGE_TAG}
           echo "IMAGE_NAME: $IMAGE_NAME"
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
